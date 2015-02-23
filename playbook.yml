@@ -25,10 +25,10 @@
       copy: src=nginx.conf dest=/etc/nginx/sites-available/default
 
     - name: download dokuwiki
-      get_url: url=http://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz dest=/tmp/
+      get_url: url=http://download.dokuwiki.org/src/dokuwiki/dokuwiki-{{ dokuwiki_version }}.tgz dest=/tmp/
 
     - name: extract dokuwiki
-      unarchive: src=/tmp/dokuwiki-stable.tgz dest=/opt/ copy=no
+      unarchive: src=/tmp/dokuwiki-{{ dokuwiki_version }}.tgz dest=/opt/ copy=no
 
     - name: install dokuwiki
       file: dest=/usr/share/nginx/html/wiki src=/opt/dokuwiki-{{ dokuwiki_version }} state=link
