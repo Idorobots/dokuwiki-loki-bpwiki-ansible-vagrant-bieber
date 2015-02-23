@@ -1,0 +1,56 @@
+---
+- hosts: all
+  sudo: true
+  vars:
+    - dokuwiki_version: 2014-09-29b
+    - wiki_name: Example Wiki
+    - superuser: root
+    - real_name: Foo
+    - email: foo@example.com
+    - password: password
+    - password_hash: $1$e5C203jm$Iq3ZZYuNETy.hxej0FMFi/
+    
+  tasks:
+    - name: update apt cache
+      apt: update_cache=yes
+
+    - name: install nginx
+      apt: name=nginx state=present
+
+    - name: install php
+      apt: name={{ item }} state=present
+      with_items: [php5-gd, php5-fpm]
+
+    - name: configure nginx
+      copy: src=nginx.conf dest=/etc/nginx/sites-available/default
+
+    - name: download dokuwiki
+      get_url: url=http://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz dest=/tmp/
+
+    - name: extract dokuwiki
+      unarchive: src=/tmp/dokuwiki-stable.tgz dest=/opt/ copy=no
+
+    - name: install dokuwiki
+      file: dest=/usr/share/nginx/html/wiki src=/opt/dokuwiki-{{ dokuwiki_version }} state=link
+
+    - name: chown dokuwiki data
+      file: path=/usr/share/nginx/html/wiki/data owner=www-data recurse=yes state=directory
+
+    - name: chown dokuwiki config
+      file: path=/usr/share/nginx/html/wiki/conf owner=www-data recurse=yes state=directory
+
+    - name: chown dokuwiki plugins
+      file: path=/usr/share/nginx/html/wiki/lib/plugins owner=www-data recurse=yes state=directory
+
+    - name: start nginx
+      service: name=nginx state=started
+
+    - name: start php
+      service: name=php5-fpm state=started
+
+    - name: run install.php
+      template: src={{ item }}.j2 dest=/usr/share/nginx/html/wiki/conf/{{ item }} owner=www-data
+      with_items: [acl.auth.php, users.auth.php, local.php]
+
+    - name: remove install.php
+      file: path=/usr/share/nginx/html/wiki/install.php state=absent
