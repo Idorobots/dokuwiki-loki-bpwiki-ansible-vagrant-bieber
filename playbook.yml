@@ -12,8 +12,16 @@
     - www_root: /usr/share/nginx/html
 
   tasks:
+    - name: add apt repos
+      apt_repository: repo={{ item }}
+      with_items: ["ppa:swi-prolog/stable"]
+
     - name: update apt cache
       apt: update_cache=yes
+
+    - name: install utils
+      apt: name={{ item }} state=present
+      with_items: [unzip, htop]
 
     - name: install nginx
       apt: name=nginx state=present
@@ -43,15 +51,28 @@
     - name: chown dokuwiki plugins
       file: path={{ www_root }}/wiki/lib/plugins owner=www-data recurse=yes state=directory
 
-    - name: run install.php
+    - name: install swi-prolog
+      apt: name=swi-prolog state=present
+
+    - name: download loki
+      get_url: url=http://loki.ia.agh.edu.pl/download/loki.zip dest=/tmp/
+
+    - name: install loki
+      unarchive: src=/tmp/loki.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
+
+    - name: enable loki syntax highlighting
+      file: dest={{ www_root }}/wiki/inc/geshi/{{ item }} src={{ www_root }}/wiki/lib/plugins/loki/{{ item }} state=link
+      with_items: [loki.php, smw.php]
+
+    - name: configure dokuwiki
       template: src={{ item }}.j2 dest={{ www_root }}/wiki/conf/{{ item }} owner=www-data
       with_items: [acl.auth.php, users.auth.php, local.php]
 
     - name: remove install.php
       file: path={{ www_root }}/wiki/install.php state=absent
 
-    - name: start nginx
+    - name: restart nginx
       service: name=nginx state=restarted
 
-    - name: start php
+    - name: restart php
       service: name=php5-fpm state=restarted
