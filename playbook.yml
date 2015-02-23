@@ -5,7 +5,7 @@
     - dokuwiki_version: 2014-09-29b
     - wiki_name: Example Wiki
     - superuser: root
-    - real_name: Foo
+    - real_name: Justin
     - email: foo@example.com
     - password: password
     - password_hash: $1$e5C203jm$Iq3ZZYuNETy.hxej0FMFi/
@@ -89,6 +89,9 @@
 
     - name: remove install.php
       file: path={{ www_root }}/wiki/install.php state=absent
+
+    - name: install Bieber
+      copy: src=bieber.png dest={{ www_root }}/wiki/lib/tpl/dokuwiki/images/logo.png
 
     - name: restart nginx
       service: name=nginx state=restarted
