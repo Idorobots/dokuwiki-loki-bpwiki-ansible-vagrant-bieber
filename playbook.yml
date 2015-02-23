@@ -42,15 +42,15 @@
     - name: chown dokuwiki plugins
       file: path=/usr/share/nginx/html/wiki/lib/plugins owner=www-data recurse=yes state=directory
 
-    - name: start nginx
-      service: name=nginx state=started
-
-    - name: start php
-      service: name=php5-fpm state=started
-
     - name: run install.php
       template: src={{ item }}.j2 dest=/usr/share/nginx/html/wiki/conf/{{ item }} owner=www-data
       with_items: [acl.auth.php, users.auth.php, local.php]
 
     - name: remove install.php
       file: path=/usr/share/nginx/html/wiki/install.php state=absent
+
+    - name: start nginx
+      service: name=nginx state=restarted
+
+    - name: start php
+      service: name=php5-fpm state=restarted
