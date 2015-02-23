@@ -3,6 +3,7 @@
   sudo: true
   vars:
     - dokuwiki_version: 2014-09-29b
+    - bpwiki_version: 2013-08-08
     - wiki_name: Example Wiki
     - superuser: root
     - real_name: Foo
@@ -21,7 +22,7 @@
 
     - name: install utils
       apt: name={{ item }} state=present
-      with_items: [unzip, htop]
+      with_items: [unzip, htop, patch]
 
     - name: install nginx
       apt: name=nginx state=present
@@ -42,15 +43,6 @@
     - name: install dokuwiki
       file: dest={{ www_root }}/wiki src=/opt/dokuwiki-{{ dokuwiki_version }} state=link
 
-    - name: chown dokuwiki data
-      file: path={{ www_root }}/wiki/data owner=www-data recurse=yes state=directory
-
-    - name: chown dokuwiki config
-      file: path={{ www_root }}/wiki/conf owner=www-data recurse=yes state=directory
-
-    - name: chown dokuwiki plugins
-      file: path={{ www_root }}/wiki/lib/plugins owner=www-data recurse=yes state=directory
-
     - name: install swi-prolog
       apt: name=swi-prolog state=present
 
@@ -63,6 +55,27 @@
     - name: enable loki syntax highlighting
       file: dest={{ www_root }}/wiki/inc/geshi/{{ item }} src={{ www_root }}/wiki/lib/plugins/loki/{{ item }} state=link
       with_items: [loki.php, smw.php]
+
+    - name: download bpwiki
+      get_url: url=http://loki.ia.agh.edu.pl/wiki/lib/exe/fetch.php/sewiki:simplebpmn-{{ bpwiki_version }}.zip dest=/tmp/
+
+    - name: install bpwiki
+      unarchive: src=/tmp/simplebpmn-{{ bpwiki_version }}.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
+
+    - name: install bpwiki patch
+      copy: src=bpwiki.css.patch dest=/tmp/
+
+    - name: patch bpwiki
+      shell: patch {{ www_root }}/wiki/lib/plugins/simplebpmn/style.css /tmp/bpwiki.css.patch
+
+    - name: chown dokuwiki data
+      file: path={{ www_root }}/wiki/data owner=www-data recurse=yes state=directory
+
+    - name: chown dokuwiki config
+      file: path={{ www_root }}/wiki/conf owner=www-data recurse=yes state=directory
+
+    - name: chown dokuwiki plugins
+      file: path={{ www_root }}/wiki/lib/plugins owner=www-data recurse=yes state=directory
 
     - name: configure dokuwiki
       template: src={{ item }}.j2 dest={{ www_root }}/wiki/conf/{{ item }} owner=www-data
