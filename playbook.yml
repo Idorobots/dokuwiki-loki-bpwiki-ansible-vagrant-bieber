@@ -43,7 +43,7 @@
     - name: install dokuwiki
       file: dest={{ www_root }}/wiki src=/opt/dokuwiki-{{ dokuwiki_version }} state=link
 
-    - name: install swi-prolog
+    - name: install loki deps
       apt: name=swi-prolog state=present
 
     - name: download loki
@@ -67,6 +67,16 @@
 
     - name: patch bpwiki
       shell: patch {{ www_root }}/wiki/lib/plugins/simplebpmn/style.css /tmp/bpwiki.css.patch
+
+    - name: install sbvr deps
+      apt: name={{ item }} state=present
+      with_items: [graphviz, openjdk-7-jdk]
+
+    - name: download sbvr
+      get_url: url=http://student.agh.edu.pl/~krzepeck/projects/bim/sbvr.zip dest=/tmp/
+
+    - name: install sbvr
+      unarchive: src=/tmp/sbvr.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
 
     - name: chown dokuwiki data
       file: path={{ www_root }}/wiki/data owner=www-data recurse=yes state=directory
