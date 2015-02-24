@@ -3,7 +3,6 @@
   sudo: true
   vars:
     - dokuwiki_version: 2014-09-29b
-    - bpwiki_version: 2013-08-08
     - wiki_name: Example Wiki
     - superuser: root
     - real_name: Foo
@@ -57,16 +56,10 @@
       with_items: [loki.php, smw.php]
 
     - name: download bpwiki
-      get_url: url=http://loki.ia.agh.edu.pl/wiki/lib/exe/fetch.php/sewiki:simplebpmn-{{ bpwiki_version }}.zip dest=/tmp/
+      get_url: url=http://student.agh.edu.pl/~krzepeck/projects/bim/simplebpmn.zip dest=/tmp/
 
     - name: install bpwiki
-      unarchive: src=/tmp/simplebpmn-{{ bpwiki_version }}.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
-
-    - name: install bpwiki patch
-      copy: src=bpwiki.css.patch dest=/tmp/
-
-    - name: patch bpwiki
-      shell: patch {{ www_root }}/wiki/lib/plugins/simplebpmn/style.css /tmp/bpwiki.css.patch
+      unarchive: src=/tmp/simplebpmn.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
 
     - name: install sbvr deps
       apt: name={{ item }} state=present
