@@ -71,6 +71,9 @@
     - name: install sbvr
       unarchive: src=/tmp/sbvr.zip dest={{ www_root }}/wiki/lib/plugins/ copy=no
 
+    - name: install content
+      unarchive: src=pages.tar.gz dest={{ www_root }}/wiki/data/
+
     - name: chown dokuwiki data
       file: path={{ www_root }}/wiki/data owner=www-data recurse=yes state=directory
 
@@ -92,3 +95,7 @@
 
     - name: restart php
       service: name=php5-fpm state=restarted
+
+    - name: rebuild dokuwiki cache
+      shell: curl http://localhost:80/wiki/doku.php?id={{ item }}&purge=true
+      with_items: ["bpwiki:loop", "bpwiki:magic", "bpwiki:syntax_errors", "bpwiki", "loki:crystal_skull", "loki:last_crusade", "loki:limitations", "loki:raiders_of_the_lost_ark", "loki:temple_of_doom", "loki_prolog", "loki_sparql", "loki", "test_project:facts", "test_project:rules", "test_project:terms", "test_project:start", "sbvr", "readme", "start"]
